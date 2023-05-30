@@ -1,0 +1,85 @@
+#include <iostream>
+#include <climits>
+#include <vector>
+
+#define V 6 // Number of vertices
+
+int minDistance(const std::vector<int>& distances, const std::vector<bool>& visited) {
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < V; v++) {
+        if (!visited[v] && distances[v] <= min) {
+            min = distances[v];
+            min_index = v;
+        }
+    }
+
+    return min_index;
+}
+
+void dijkstra(const std::vector<std::vector<int>>& graph, int source, std::vector<double>& averageTimes) {
+    std::vector<int> distances(V, INT_MAX);
+    std::vector<bool> visited(V, false);
+
+    distances[source] = 0;
+
+    for (int count = 0; count < V - 1; count++) {
+        int u = minDistance(distances, visited);
+        visited[u] = true;
+
+        for (int v = 0; v < V; v++) {
+            if (!visited[v] && graph[u][v] && distances[u] != INT_MAX &&
+                distances[u] + graph[u][v] < distances[v]) {
+                distances[v] = distances[u] + graph[u][v];
+            }
+        }
+    }
+
+    int totalDistance = 0;
+    int numCities = V - 1; // Excluding the source city itself
+    for (int i = 0; i < V; i++) {
+        if (i != source) {
+            totalDistance += distances[i];
+        }
+    }
+    double averageDistance = static_cast<double>(totalDistance) / numCities;
+    averageTimes[source] = averageDistance;
+}
+
+int main() {
+    std::vector<std::vector<int>> graph = {
+        {0, 10, 0, 0, 15, 5},
+        {10, 0, 10, 30, 0, 0},
+        {0, 10, 0, 12, 5, 0},
+        {0, 30, 12, 0, 0, 20},
+        {15, 0, 5, 0, 0, 0},
+        {5, 0, 0, 20, 0, 0}
+    };
+
+    std::vector<double> averageTimes(V);
+
+    // Calculate average times for each source city
+    for (int source = 0; source < V; source++) {
+        dijkstra(graph, source, averageTimes);
+    }
+
+    // Find the smallest average time
+    double smallestAverageTime = INT_MAX;
+    for (int i = 0; i < V; i++) {
+        if (averageTimes[i] < smallestAverageTime) {
+            smallestAverageTime = averageTimes[i];
+        }
+    }
+
+    // Print the cities with the smallest average time
+    std::cout << "Cities with the smallest average time:\n";
+    for (int i = 0; i < V; i++) {
+        if (averageTimes[i] == smallestAverageTime) {
+            std::cout << "City " << i << "\n";
+        }
+    }
+
+    std::cout << "Smallest Average Time: " << smallestAverageTime << std::endl;
+
+    return 0;
+}
